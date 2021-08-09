@@ -23,15 +23,16 @@ pipeline {
             steps {
                 echo 'Starting to build the project builder docker image'
                 script {
-                    builderImage = docker.build("${ACCOUNT_REGISTRY_PREFIX}/learning-webapp-builder:${GIT_COMMIT_HASH}", "-f ./Dockerfile.builder .")
-                    builderImage.push()
-                    builderImage.push("${env.GIT_BRANCH}")
-                    builderImage.inside('-v $WORKSPACE:/output -u root') {
-                        sh """
-                           cd /output
-                           lein uberjar
-                        """
-                    }
+                      builderImage = docker.pull("${ACCOUNT_REGISTRY_PREFIX}/learning-webapp-builder:master")
+//                    builderImage = docker.build("${ACCOUNT_REGISTRY_PREFIX}/learning-webapp-builder:${GIT_COMMIT_HASH}", "-f ./Dockerfile.builder .")
+//                    builderImage.push()
+                      builderImage.push("${env.GIT_BRANCH}")
+//                      builderImage.inside('-v $WORKSPACE:/output -u root') {
+//                        sh """
+//                           cd /output
+//                           lein uberjar
+//                        """
+//                    }
                 }
             }
         }
@@ -77,47 +78,47 @@ pipeline {
             }
         }
 
-        stage('Integration Tests') {
-            when {
-                branch 'master'
-            }
-            steps {
-                echo 'Deploy to test environment and run integration tests'
-                script {
-                    TEST_ALB_LISTENER_ARN="arn:aws:elasticloadbalancing:us-east-1:089778365617:listener/app/testing-website/3a4d20158ad2c734/49cb56d533c1772b"
-                    sh """
-                    ./run-stack.sh learning-webapp-test ${TEST_ALB_LISTENER_ARN}
-                    """
-                }
-                echo 'Running tests on the integration test environment'
-                script {
-                    sh """
-                       curl -v http://testing-website-1317230480.us-east-1.elb.amazonaws.com | grep '<title>Welcome to learning-webapp</title>'
-                       if [ \$? -eq 0 ]
-                       then
-                           echo tests pass
-                       else
-                           echo tests failed
-                           exit 1
-                       fi
-                    """
-                }
-            }
-        }
+//        stage('Integration Tests') {
+//            when {
+//                branch 'master'
+//            }
+//            steps {
+//                echo 'Deploy to test environment and run integration tests'
+//                script {
+//                    TEST_ALB_LISTENER_ARN="arn:aws:elasticloadbalancing:us-east-1:089778365617:listener/app/testing-website/3a4d20158ad2c734/49cb56d533c1772b"
+//                    sh """
+//                    ./run-stack.sh learning-webapp-test ${TEST_ALB_LISTENER_ARN}
+//                    """
+//                }
+//                echo 'Running tests on the integration test environment'
+//                script {
+//                    sh """
+//                       curl -v http://testing-website-1317230480.us-east-1.elb.amazonaws.com | grep '<title>Welcome to learning-webapp</title>'
+//                       if [ \$? -eq 0 ]
+//                       then
+//                           echo tests pass
+//                       else
+//                           echo tests failed
+//                           exit 1
+//                       fi
+//                    """
+//                }
+//            }
+//        }
 
  
-        stage('Deploy to Production') {
-            when {
-                branch 'master'
-            }
-            steps {
-                script {
-                    PRODUCTION_ALB_LISTENER_ARN="arn:aws:elasticloadbalancing:us-east-1:089778365617:listener/app/production-website/a0459c11ab5707ca/5d21528a13519da6"
-                    sh """
-                    ./run-stack.sh learning-webapp-production ${PRODUCTION_ALB_LISTENER_ARN}
-                    """
-                }
-            }
-        }
+//        stage('Deploy to Production') {
+//            when {
+//                branch 'master'
+//            }
+//            steps {
+//                script {
+//                    PRODUCTION_ALB_LISTENER_ARN="arn:aws:elasticloadbalancing:us-east-1:089778365617:listener/app/production-website/a0459c11ab5707ca/5d21528a13519da6"
+//                    sh """
+//                    ./run-stack.sh learning-webapp-production ${PRODUCTION_ALB_LISTENER_ARN}
+//                    """
+//                }
+//            }
+//        }
     }
 }
