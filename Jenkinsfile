@@ -23,7 +23,7 @@ pipeline {
             steps {
                 echo 'Starting to build the project builder docker image'
                 script {
-                      builderImage = docker.pull("${ACCOUNT_REGISTRY_PREFIX}/learning-webapp-builder:master")
+                      builderImage = docker.image("${ACCOUNT_REGISTRY_PREFIX}/learning-webapp-builder:master")
 //                    builderImage = docker.build("${ACCOUNT_REGISTRY_PREFIX}/learning-webapp-builder:${GIT_COMMIT_HASH}", "-f ./Dockerfile.builder .")
 //                    builderImage.push()
                       builderImage.push("${env.GIT_BRANCH}")
